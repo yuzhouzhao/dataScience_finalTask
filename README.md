@@ -1,1 +1,3 @@
 # dataScience_finalTask
+
+这里是2019级南京大学软件学院学生在《数据科学基础》课程完成的大作业，详情见finalReport

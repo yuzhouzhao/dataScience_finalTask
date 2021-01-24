@@ -33,7 +33,9 @@
 
 ### 2.3-代码开源地址
 
-[data_science_final_task](https://github.com/yuzhouzhao/data_science_final_task.git) 
+**GitHub:** [dataScience_finalTask](https://github.com/yuzhouzhao/dataScience_finalTask.git) 
+
+**数据可视化: **[https://linzs148.github.io/Visualization/](https://linzs148.github.io/Visualization/)
 
 ## 03-数据获取及初步处理
 
