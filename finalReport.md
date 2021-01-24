@@ -10,7 +10,7 @@
 
 |  姓名  |   学号    |    电话     |                   分工                   |
 | :----: | :-------: | :---------: | :--------------------------------------: |
-| 赵宇舟 | 191250204 | 18851865055 |       数据内容爬取、机器学习与nlp        |
+| 赵宇舟 | 191250204 | 18851865055 |  数据内容爬取、机器学习与模型训练、nlp   |
 | 林正顺 | 191250088 | 15371077531 |     数据链接爬取、信息检索、概统分析     |
 | 陶泽华 | 191250133 | 19850355091 | 数据内容爬取、数据筛选与分类、数据可视化 |
 
@@ -24,7 +24,7 @@
 
 
 
-**关键字**：疫情，心态分析，数据爬取，数据分析，机器学习，NLP
+**关键字**：疫情，心态分析，python，数据爬取，机器学习，朴素贝叶斯，NLP，数据可视化
 
 ### 2.2-研究背景
 
@@ -35,7 +35,7 @@
 
 **GitHub:** [dataScience_finalTask](https://github.com/yuzhouzhao/dataScience_finalTask.git) 
 
-**数据可视化: **[https://linzs148.github.io/Visualization/](https://linzs148.github.io/Visualization/)
+**数据可视化: **[https://linzs148.github.io/Visualization/](https://linzs148.github.io/Visualization/)（建议使用Chrome浏览器）
 
 ## 03-数据获取及初步处理
 
@@ -185,7 +185,7 @@ def parse_comment_info(self, url):
 
 ​	    我们在本次作业中做的是**基于机器学习的情感分析**，我们将情感分析视为一个二分类的问题，采用机器学习的方法识别。先将文本分词后，选择特征词后转化为词向量，进而将文本矩阵化，利用朴素贝叶斯（Naive Bayes），支持向量机（SVM）等算法进行分类。最终训练得到一个基于机器学习的分类器模型，而模型的分类效果取决于训练文本的选择以及正确的情感标注。
 
-##### 用到的工具：
+#### 用到的工具：
 
 > - NLTK库（natural language toolkit）：是一套基于python的自然语言处理工具集。
 > - Sklearn库（ Scikit-learn ）：机器学习中最简单高效的数据挖掘和数据分析工具。
@@ -203,8 +203,7 @@ def parse_comment_info(self, url):
 
 #### 分词
 
-​		分词即将书面文本分割成有意义单位的过程，这里的有意义单位即“词”，中文与英文不同，英文天然地以单词为单位组成句子，每个单词之间有空格为分割，而中文则需要另外的处理。
-​		处理的方法：
+​		分词即将书面文本分割成有意义单位的过程，这里的有意义单位即“词”，中文与英文不同，英文天然地以单词为单位组成句子，每个单词之间有空格为分割，而中文则需要另外的处理。中文分词方法：
 
 - jieba库：一个基于Python的中文分词的组件
 - Snownlp.seg：Snownlp库也有分词的功能**（我们使用的）**
@@ -224,13 +223,13 @@ def parse_comment_info(self, url):
 
 - 中立（0）
 
-- 消极（1）
+- 消极（+1）
 
   值得注意的是，我们在机器学习的训练过程中只使用了正样本和负样本，即`pos.txt`和`neg.txt` 
 
 #### 机器学习模型选择
 
-​		我们将本次大作业的情感预测视为一个二分问题，因此最适用的两个机器学习算法便是**支持向量机（SVM）以及朴素贝叶斯（Naive Bayes）**。在sklearn和nltk库中，均有支持向量机和朴素贝叶斯模型的接口，为找到最佳的机器学习算法，我们在实验过程中同时实验了两种不同的模型，并最终选择了**朴素贝叶斯**。主要的参考资料有：《机器学习》周志华著，各类blog、知乎、CSDN等。
+​		我们将本次大作业的情感预测视为一个二分问题，因此最适用的两个机器学习算法便是**支持向量机（SVM）**以及**朴素贝叶斯（Naive Bayes）**。而在sklearn和nltk库中，均有支持向量机和朴素贝叶斯模型的接口，为找到最佳的机器学习算法，我们在实验过程中同时实验了两种不同的模型，并最终选择了**朴素贝叶斯**。主要的参考资料有：《机器学习》周志华著，各类blog、知乎、CSDN等。
 
 ##### 支持向量机（SVM）
 
@@ -305,7 +304,22 @@ $P(A|B)=P(A)\frac{P(B|A)}{P(B)}$
 - 如果P1(x, y) < P2(x ,y)，那么类别为2
 
 ​        也就是说，我们会选择**高概率**对应的类别。这就是贝叶斯决策理论的核心思想，即选择**具有最高概率的决策**。而朴素贝叶斯之所以称为“朴素”，是因为在整个过程中都假设特征之间是相互独立的以及每一个特征都是同等重要的。
-​        贝叶斯模型的训练过程实质上是在统计每一个特征出现的频次。
+​        **贝叶斯模型的训练过程实质上是在统计每一个特征出现的频次，其核心代码如下：** 
+
+```python
+def train(self, data):
+    # data 中既包含正样本，也包含负样本
+    for d in data: # data中是list
+        # d[0]:分词的结果，list
+        # d[1]:正/负样本的标记
+        c = d[1]
+        if c not in self.d:
+            self.d[c] = AddOneProb() # 类的初始化
+        for word in d[0]: # 分词结果中的每一个词
+            self.d[c].add(word, 1)
+    # 返回的是正类和负类之和
+    self.total = sum(map(lambda x: self.d[x].getsum(), self.d.keys())) # 取得所有的d中的sum之和
+```
 
 **朴素贝叶斯的优缺点：**
 
@@ -391,9 +405,8 @@ class Sentiment(object):
 
 ```python
 ...
-classifier = Sentiment()
+classifier = Sentiment() # 初始化类
 classifier.load()
-
 
 # 训练新模型的接口函数
 def train(neg_file, pos_file):
@@ -413,7 +426,6 @@ def train(neg_file, pos_file):
 # 保存模型的接口函数
 def save(fname, iszip=True):
     classifier.save(fname, iszip)
-
 
 def load(fname, iszip=True):
     classifier.load(fname, iszip)
