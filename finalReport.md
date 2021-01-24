@@ -55,17 +55,75 @@
 
 #### 新闻链接爬取+新闻内容爬取：
 
+- 思路
+
+  虽然在新浪新闻的官网上也能够进行关键词的搜索，进而对得到所有相关新闻的链接，但是这样有两点不方便
+
+  1. 新浪新闻的官网对于显示的新闻熟练做了限制，不能够获取到比较早期的新闻链接
+  2. 在页面上根据时间进行筛选、获取新闻链接对应的元素都不太方便
+
+  所以我没有选择直接爬去新浪新闻主页，而是在查询了相关资料之后找到了新浪新闻的[数据接口](https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2509&etime=1576944001&stime=1577030402&ctime=1577030405&date=2019-12-22&k=&num=50&page=1)
+
+  https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2509&etime=1575734400&stime=1575820800&ctime=1575820800&date=2019-12-22&num=50&page=1
+
+  只要改变url链接里的`date`参数就能更改新闻的日期，通过更改`page`参数能够模拟翻页，`num`参数控制每一页最大新闻数量
+
+- 问题
+  比较令我困惑的是`etime`、`stime`和`ctime`参数到底是什么含义
+
+-  解决
+   通过观察发现，`stime`和`ctime`的值总是相等的，而且它们的值总是比`stime`的值大86400，86400到底有什么意义呢？
+
+   我突然想到`86400 = 24 * 60 * 60`, 这说明86400代表的是一天的时间（以`秒`为单位），又经过搜索我查到这三个参数均为时间戳的形式，经过这番准备接下来的工作就非常容易完成了
+
+- 流程：在循环里改变参数的值获取某一天内的所有新闻，并在关键词列表里面进行匹配来筛选出所有和疫情相关的新闻
+
 #### bilibili视频链接爬取+bilibili视频评论爬取：
 
 ​    	根据"疫情", "新冠", "抗疫", "口罩", "病例", "钟南山", "防疫", "火神山", "雷神山“，”肺炎“等一系列关键词，同时借助requests库、BeautifulSoup库来筛选对应上述关键词的链接，并将结果存入了bilibili.txt文件中。再根据获得的链接获得视频的BV号去爬取视频的评论。
 
 #### 微博评论爬取：
 
-  	首先用cookies模拟登陆网页版新浪微博，然后根据指定的官方微博和指定的微博时间对应的微博链接来抓取该时间段的前15条微博的评论。
+​		首先用cookies模拟登陆网页版新浪微博，然后根据指定的官方微博和指定的微博时间对应的微博链接来抓取该时间段的前15条微博的评论。
 
 ### 3.3-代码解释
 
 #### 新闻链接爬取+新闻内容爬取代码：
+
+```python
+# -*- coding: utf-8 -*-
+import requests
+from bs4 import BeautifulSoup
+
+
+def readAndWrite(url):
+    response = requests.get(url)
+    response.encoding = 'utf-8'
+    soup = BeautifulSoup(response.text, "html.parser")
+    result = soup.find(attrs={'class': 'article'})
+    try:
+        ret = result.text
+        ret = ret.replace("\n", "")
+        ret = ret.replace(" ", "")
+        ret = ret.replace("　　", "")
+        ret += '\n'
+    except:
+        return
+
+    with open('jstv_news.txt', 'a') as f:
+        f.writelines(ret)
+
+
+if __name__ == '__main__':
+
+    # readAndWrite('http://news.jstv.com/a/20201206/1607262930567.shtml')
+    f = open('jstv_news.txt')
+    for i in f:
+        url = i.replace("\n", "")
+        readAndWrite(url)
+```
+
+
 
 #### bilibili视频链接爬取+bilibili视频评论爬取代码：
 
@@ -435,18 +493,341 @@ def classify(sent):
     return classifier.classify(sent)
 ```
 
-## 05-总结
+## 05-统计分析
 
 ---
 
-### 数据可视化
+### 5.1-前期准备
 
-## 06-后记
+#### 数据预处理
+
+​		由于从NLP模型中得到的数据为“日期 数据”的txt文件，所以首先需要将所有数据合并为一整个DataFrame才能进行后续的分析和可视化
+
+#### 图像平滑处理
+
+直接用源数据来做图，难免会因为数据的波动太大造成图像不够平滑
+这里采用**滑动窗口**的方式来使图像变得平滑
+
+- 原理
+
+> 取一个长度为7的窗口，计算窗口中的7个数据的平均值作为该窗口的值，不断平移（每次一个单位）窗口直到窗口覆盖列表中的所有数据
+
+- 代码
+
+```python
+index = 0
+    data = []
+    d = dataFrame.values
+    while index + 7 < len(d):
+        data.append(sum(d[index:index + 7]) / 7)   
+        index += 1 
+```
+
+- 效果
+
+以新闻数据得到的心态分布为例
+
+用原数据画出的图像是这样
+
+![news](./finalReportImages/news.svg)
+
+平滑处理之后的图像是这样的
+
+![](./finalReportImages/news_aftersmooth.svg)
+
+很明显平滑后的曲线更容易拟合出相应的曲线方程，也更加利于后面的数据分析和图像分析
+
+### 5.2-卡方拟合优度检验
+
+- 原理
+
+> 拟合优度检验是用卡方统计量进行统计显著性检验的重要内容之一，它是依据总体分布状况，计算出分类变量中各类别的期望频数，与分布的观察频数进行对比，判断期望频数与观察频数是否有显著差异，从而达到从分类变量进行分析的目的
+
+- 步骤
+
+1. 统计出`N`次观测值中每组的观测频数，记为`Ni`
+2. 根据变量的分布规律或概率运算法则，计算每组的理论频率为`Pi`
+3. 计算每组的理论频数`Ti  = N * Pi`
+4. 检验`Ni`与`Ti`的差异显著性，判断两者之间的不符合度
+
+>   零假设：H0：Ni = Ti；备择假设： Ni ≠ Ti
+>
+>   （Ti  = N * Pi不得小于5，若小于5，将尾区相邻的组合并，直到合并后的组的Ti ≥ 5，合并后再计算卡方值）
+>
+>   卡方统计量![img](https://bkimg.cdn.bcebos.com/formula/e5b0fcb924fa9e9eecc4629e67ee62c5.svg)
+
+- 代码
+
+```Python
+def normal(low, high):
+    #计算正态分布的密度函数从low到high的积分
+    return quad(lambda x: math.exp(-math.pow(x - mean, 2) / (2 * sigma ** 2)) / (math.sqrt(2 * math.pi) * sigma), low, high)
+     
+def checkAlpha(alpha):
+    #模拟查表，返回置信度对应的阈值
+    #由于卡方的n比较大，所以直接极限趋近于正态分布查表
+    if alpha == 0.01:
+        return 2.325
+    if alpha == 0.05:
+        return 1.645
+    if alpha == 0.1:
+        return 1.285              
+
+def chisquareFitting(data):
+    '''
+    卡方拟合优度检验,检验是否为正态分布
+    data -- 样本数据
+    '''
+    global mean, sigma
+    sumry = 0
+    num = 0
+    for index in range(len(data)):
+        sumry += data[index] * index
+        num += data[index]
+    mean = sumry / num
+    #计算均值
+    sumry = 0
+    for index in range(len(data)):
+        sumry += math.pow(index - mean, 2) * data[index]
+    sigma = math.sqrt(sumry / num)
+    #计算方差
+    p = []
+    low = -math.inf
+    high = 0
+    while high < len(data):
+        p.append(normal(low, high)[0])
+        low = high
+        high += 1
+    p = p[:-1]
+    p.append(normal(high - 1, math.inf)[0])    
+    #计算出理论分布p
+    sumry = 0
+    for index in range(len(data)):
+        sumry += math.pow(data[index], 2) / (num * p[index])
+    chis = sumry - num
+    #计算出卡方统计量
+    print("卡方统计量:", end = " ")
+    print(chis)
+    r = num - 2 - 1 
+    print("置信度为0.1的阈值:", end = " ")
+    print(math.sqrt(2 * r) * checkAlpha(0.1) + r)
+    print("置信度为0.05的阈值:", end = " ")
+    print(math.sqrt(2 * r) * checkAlpha(0.05) + r)
+    print("置信度为0.01的阈值:", end = " ")
+    print(math.sqrt(2 * r) * checkAlpha(0.01) + r)
+```
+
+- 运行结果
+
+对从[GoPUP数据接口](http://doc.gopup.cn/#/README)获得的数据进行卡方拟合优度检验（以下数据均是以“疫情”为关键字获取的指数数据）
+
+1. 百度搜索指数
+
+> ​		搜索指数是以网民在百度的搜索量为数据基础，以关键词为统计对象，科学分析并计算出各个关键词在百度网页搜索中搜索频次的加权和。
+> ​		根据搜索来源的不同，搜索指数分为PC搜索指数和移动搜索指数
+
+计算结果
+
+![](./finalReportImages/search.png)
+
+原图像
+
+![](./finalReportImages/search_index.svg)
+
+平滑后图像
+
+![](./finalReportImages/search_index_aftersmooth.svg)
+
+2. 百度资讯指数
+
+> ​		以百度智能分发和推荐内容数据为基础，将网民的阅读、评论、转发、点赞、不喜欢等行为的数量加权求和得出资讯指数。
+
+计算结果
+
+![](./finalReportImages/info.png)
+
+原图像
+
+![](./finalReportImages/info_index.svg)
+
+平滑后图像
+
+![](./finalReportImages/info_index_aftersmooth.svg)
+
+3. 百度媒体指数
+
+> ​		媒体指数是以各大互联网媒体报道的新闻中，与关键词相关的，被百度新闻频道收录的数量，采用新闻标题包含关键词的统计标准，数据来源、计算方法与搜索指数无直接关系。
+
+计算结果
+
+![](./finalReportImages/media.png)
+
+原图像
+
+![](./finalReportImages/media_index.svg)
+
+平滑后图像
+
+![](./finalReportImages/media_index_aftersmooth.svg)
+
+- 结果分析：
+
+  三张图只有第一张落在了卡方检验的阈值之内，事实上，我们通过观察发现，第二张图的前半段有一些非常高的点，第三张图的后半段抖动太剧烈，我猜想这应该是它们落在阈值之外的原因
+
+### 5.3-相关系数矩阵
+
+- 原理
+
+> ​		相关系数是最早由统计学家卡尔·皮尔逊设计的统计指标，是研究变量之间**线性相关程度**的量，一般用字母 r 表示。
+> ​		由于研究对象的不同，相关系数有多种定义方式，较为常用的是**皮尔逊相关系数**
+
+- 公式
+
+![img](https://bkimg.cdn.bcebos.com/formula/565d6ddbd305158d2e80faf420df4417.svg)
+
+- 代码
+
+```python
+def corrMatrix(data):
+    #data为数据，DataFrame格式，计算各个特征之间的相关系数并绘出相关系数矩阵
+    corrmatrix = data.corr()
+    plt.subplots(figsize=(9, 9))
+    sns.heatmap(corrmatrix, annot=True, vmax=1, square=True, cmap="Blues")
+    plt.show()
+```
+
+- 运行结果：
+
+  日数据
+  <img src="./finalReportImages/corr.svg" style="zoom: 67%;" />
+
+  月数据
+  <img src="./finalReportImages/corr_month.svg" style="zoom:67%;" />
+
+> search_index -- 百度搜索指数
+> info_index -- 百度资讯指数
+> media_index -- 百度媒体指数
+> infected_people -- 每月新增确诊病例
+> news -- 由新闻数据得出的心态分布
+> bilibili -- 由B站数据得出的心态分布
+
+- 结果分析
+
+  很明显可以看出，基于[GoPUP数据接口](http://doc.gopup.cn/#/README)获取的数据（`search_index`、`info_index`和`media_index`）具有很大的相关性，而这些数据和公众心态的相关性都不大。事实上这是合理的，因为公众的情绪非常敏感，尤其是在疫情期间，只要发生了一些事是或者是听说了一些言论就会产生很大的情绪波动，这种波动可能是更加积极，也可能更加消极。换而言之，这些搜索、媒体之类的数据只知道数量，并不能得知其中的消极、积极数据的占比，所以公众的情绪更可能和这些数据中的消极、积极数据的比例呈现一种正相关性，而不是和数据的数量线性相关。
+
+### 5.4-线性回归
+
+从上面的相关系数矩阵不难看出，我们得到的心态分布和指数分布、感染人数等等相关系数都比较小，所以并不存在很明显的线性关系，也就没有必要用线性回归来拟合了
+
+## 06-数据可视化
 
 ---
 
-### 感谢与感想
+[可视化大屏](https://linzs148.github.io/Visualization/)  **（建议使用Chrome浏览器查看）**
 
-### 引用
+[可视化项目代码](https://github.com/linzs148/Visualization)
 
-### 不足与改进
+![](./finalReportImages/Visualization.png)
+
+### 6.1-图表解释
+
+> - 第一列
+>
+>   - 第一行
+>     - 每月新增确诊人数随时间变化图 横坐标为月份 纵坐标为新增确诊人数
+>     - **可以通过鼠标中键滚动实现图表的放大/缩小**
+>
+>   - 第二行
+>     - 公众心态随时间变化图（新浪新闻数据得到的心态）横坐标为日期，纵坐标为心态值（取值为0~1）
+>     - **鼠标放在相应的时间线上会显示对应日期的心态数值**
+>
+>   - 第三行
+>     - 所有获取到的数据的数量以及来源的分布
+>     - **鼠标放在相应的块上会显示对应数据来源的数据量**
+>
+> - 第二列
+>
+>   - 头部
+>     - 总数据量 数据来源
+>
+>   - 主体
+>     - 各个月份的心态分布雷达图
+>     - **鼠标悬停在对应区域上会显示每个月的心态数值**
+>     - **可以点击下方的图例使得相应的区域显示/消失**
+>
+> - 第三列
+>
+>   - 第一行
+>     - 截至2021年1月22日各省累计确诊病例图
+>     - **鼠标悬停在对应省份上会显示该省的累计确诊人数**
+>
+>   - 第二行
+>     - 百度搜索指数随时间变化图 横坐标为月份 纵坐标为搜索指数
+>     - **通过点击图上方不同的关键词切换不同的指数分布**
+>
+>   - 第三行       
+>     - 词频统计 以出现次数为权重画出词云图
+>     - **点击相应的词语会跳转到以该词语为关键词的百度搜索页面**
+>
+
+### 6.2-项目结构
+
+```
+Visualization
+├─index.html// 主页面
+├─README.md
+├─js
+| ├─china.js
+| ├─echarts-wordcloud.js
+| ├─echarts.min.js
+| ├─flexible.js
+| ├─index.js// 图表的JavaScript代码
+| └jquery.js
+├─images
+|   ├─bg.jpg
+|   ├─head_bg.png
+|   ├─jt.png
+|   ├─lbx.png
+|   ├─line.png
+|   └map.png
+├─css
+|  ├─index.css// 页面布局
+|  └index.less
+├─.git
+```
+
+### 6.3-模板选择
+
+数据可视化方面，我采用的是**Echarts模板**，制作了一款当下比较流行的**可视化大屏**
+
+选择Echarts的原因大体为以下几点：
+
+- **丰富的资源**
+
+  Echarts涵盖各行各业所需的各类图表，能够满足几乎所有的作图要求，无论是常见的柱状图、折线图、饼图、散点图还是比较实用的地图、雷达图、关系网络甚至不太常见的3D地球图、GL关系图，都能在Echarts里找到相应的绘图模板
+
+  此外，为了方便用户的使用，Echarts还为每一种图表提供了若干个代码示例以及对于各种图表所涉及到的属性给出了详细的中文文档说明，这大大降低了使用Echarts的难度
+
+- **炫酷的风格**
+
+  Echarts中的大部分图表都秉持着扁平化的风格，简约却不失优雅
+
+  Echarts是一款基于JavaScript实现的开源可视化库，这就意味着它不同于一般的Matplotlib、Seaborn、Bokeh等只能做出静态的图表Python可视化库，而是能够做出动态的图标，JavaScript赋予Echarts更多的交互性和更好的用户体验，能够让作图从一项工作变为一种艺术
+
+- **开源的社区**
+
+  Echarts除了在官网提供各种基础模板，还专门开放了一个开源的社区Gallery供用户上传自己设计的作图模板，同样的每个模板依然有代码示例，很方面就能够学习使用
+
+- **方便的呈现**
+
+  基于JavaScript实现的Echarts很容易通过Github Page嵌套到网页中，使得所有的图表能够完整地呈现出来，只需要一个链接就能轻松访问
+
+## 07-后记
+
+---
+
+### 7.1-感谢与感想
+
+### 7.2-引用
+
+### 7.3-不足与改进
