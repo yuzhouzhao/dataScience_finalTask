@@ -24,6 +24,10 @@
 
 
 
+
+
+
+
 **关键字**：疫情，心态分析，python，数据爬取，机器学习，朴素贝叶斯，NLP，数据可视化
 
 ### 2.2-研究背景
@@ -88,7 +92,7 @@
 
 ### 3.3-代码解释
 
-#### 新闻链接爬取+新闻内容爬取代码：
+**新闻链接爬取+新闻内容爬取代码：**
 
 ```python
 # -*- coding: utf-8 -*-
@@ -123,9 +127,7 @@ if __name__ == '__main__':
         readAndWrite(url)
 ```
 
-
-
-#### bilibili视频链接爬取+bilibili视频评论爬取代码：
+**bilibili视频链接爬取+bilibili视频评论爬取代码：**
 
 ```python
 # b站视频链接爬取代码
@@ -177,7 +179,7 @@ if __name__ == '__main__':
         f.close()
 ```
 
-#### 微博评论爬取代码：
+**微博评论爬取代码：**
 
 ```python
 # 设置cookies 模拟登陆网页版微博，cookies由本机登录时获得
@@ -185,8 +187,6 @@ self.headers = {
             "cookie": "login_sid_t=95e31daa102176d1debb61e844641c26; cross_origin_proto=SSL; _s_tentry=passport.weibo.com; Apache=8896751903602.45.1611205480375; SINAGLOBAL=8896751903602.45.1611205480375; ULV=1611205480379:1:1:1:8896751903602.45.1611205480375:; wb_view_log_5688140475=1440*9002; wb_view_log=1440*9002; WBStorage=8daec78e6a891122|undefined; crossidccode=CODE-tc-1L2uul-2O9Vrn-3NXFKeQ59aniHK8bfdc35; SSOLoginState=1611214485; SUB=_2A25NDV7FDeRhGeNI41oQ9C7IzDmIHXVuDmKNrDV8PUJbkNAKLWTskW1NSDShAmgWg52xu-LVa7tA1onXiM57xVOs; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WW0TQIzrxRpmDardhs5o9p15NHD95QfSonReKB7ShMfWs4DqcjQi--ciK.RiKLsi--Ri-8si-82i--fi-isiKn0i--ciKnXi-isxsHLM5tt; wvr=6; UOR=,,graph.qq.com; webim_unReadCount=%7B%22time%22%3A1611214550618%2C%22dm_pub_total%22%3A4%2C%22chat_group_client%22%3A0%2C%22chat_group_notice%22%3A0%2C%22allcountNum%22%3A42%2C%22msgbox%22%3A0%7D",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.96 Safari/537.36",
         }
-
-
 
 def parse_comment_info(self, url):
     # 爬取评论和评论的时间
@@ -213,19 +213,19 @@ def parse_comment_info(self, url):
 
 ### 3.4-成果展示
 
-#### 新闻内容：
+**新闻内容：**
 
 ​		获得了新浪网2019年12月至2020年12月之间的所有与新冠疫情有关的新闻，并且以日期为划分存储。
 
 ![新闻](./finalReportImages/新闻.png)
 
-#### b站评论：
+**b站评论：**
 
 ​		获得了b站2019年12月至2020年12月之间的所有与新冠疫情有关的视频的评论，并且以日期为划分存储。
 
 ![b站评论](./finalReportImages/b站评论.png)
 
-#### 微博评论：
+**微博评论：**
 
 ​		获得了新浪微博2019年12月至2020年6月之间的一些官方微博的关于疫情报道的评论。
 
@@ -510,7 +510,7 @@ def classify(sent):
 
 - 原理
 
-> 取一个长度为7的窗口，计算窗口中的7个数据的平均值作为该窗口的值，不断平移（每次一个单位）窗口直到窗口覆盖列表中的所有数据
+> ​		取一个长度为7的窗口，计算窗口中的7个数据的平均值作为该窗口的值，不断平移（每次一个单位）窗口直到窗口覆盖列表中的所有数据。
 
 - 代码
 
@@ -529,11 +529,11 @@ index = 0
 
 用原数据画出的图像是这样
 
-![news](./finalReportImages/news.svg)
+<img src="./finalReportImages/news.svg" alt="news" style="zoom:67%;" />
 
 平滑处理之后的图像是这样的
 
-![](./finalReportImages/news_aftersmooth.svg)
+<img src="./finalReportImages/news_aftersmooth.svg" style="zoom:67%;" />
 
 很明显平滑后的曲线更容易拟合出相应的曲线方程，也更加利于后面的数据分析和图像分析
 
@@ -541,7 +541,7 @@ index = 0
 
 - 原理
 
-> 拟合优度检验是用卡方统计量进行统计显著性检验的重要内容之一，它是依据总体分布状况，计算出分类变量中各类别的期望频数，与分布的观察频数进行对比，判断期望频数与观察频数是否有显著差异，从而达到从分类变量进行分析的目的
+> ​		拟合优度检验是用卡方统计量进行统计显著性检验的重要内容之一，它是依据总体分布状况，计算出分类变量中各类别的期望频数，与分布的观察频数进行对比，判断期望频数与观察频数是否有显著差异，从而达到从分类变量进行分析的目的
 
 - 步骤
 
@@ -551,10 +551,8 @@ index = 0
 4. 检验`Ni`与`Ti`的差异显著性，判断两者之间的不符合度
 
 >   零假设：H0：Ni = Ti；备择假设： Ni ≠ Ti
->
->   （Ti  = N * Pi不得小于5，若小于5，将尾区相邻的组合并，直到合并后的组的Ti ≥ 5，合并后再计算卡方值）
->
->   卡方统计量![img](https://bkimg.cdn.bcebos.com/formula/e5b0fcb924fa9e9eecc4629e67ee62c5.svg)
+>   (Ti  = N * Pi不得小于5，若小于5，将尾区相邻的组合并，直到合并后的组的Ti ≥ 5，合并后再计算卡方值)
+>   卡方统计量<img src="https://bkimg.cdn.bcebos.com/formula/e5b0fcb924fa9e9eecc4629e67ee62c5.svg" alt="img" style="zoom:90%;" />
 
 - 代码
 
@@ -624,7 +622,7 @@ def chisquareFitting(data):
 1. 百度搜索指数
 
 > ​		搜索指数是以网民在百度的搜索量为数据基础，以关键词为统计对象，科学分析并计算出各个关键词在百度网页搜索中搜索频次的加权和。
-> ​		根据搜索来源的不同，搜索指数分为PC搜索指数和移动搜索指数
+> ​		根据搜索来源的不同，搜索指数分为PC搜索指数和移动搜索指数。
 
 计算结果
 
@@ -632,11 +630,11 @@ def chisquareFitting(data):
 
 原图像
 
-![](./finalReportImages/search_index.svg)
+<img src="./finalReportImages/search_index.svg" style="zoom:67%;" />
 
 平滑后图像
 
-![](./finalReportImages/search_index_aftersmooth.svg)
+<img src="./finalReportImages/search_index_aftersmooth.svg" style="zoom:67%;" />
 
 2. 百度资讯指数
 
@@ -644,15 +642,15 @@ def chisquareFitting(data):
 
 计算结果
 
-![](./finalReportImages/info.png)
+<img src="./finalReportImages/info.png" style="zoom:67%;" />
 
 原图像
 
-![](./finalReportImages/info_index.svg)
+<img src="./finalReportImages/info_index.svg" style="zoom:67%;" />
 
 平滑后图像
 
-![](./finalReportImages/info_index_aftersmooth.svg)
+<img src="./finalReportImages/info_index_aftersmooth.svg" style="zoom:67%;" />
 
 3. 百度媒体指数
 
@@ -660,26 +658,26 @@ def chisquareFitting(data):
 
 计算结果
 
-![](./finalReportImages/media.png)
+<img src="./finalReportImages/media.png" style="zoom:67%;" />
 
 原图像
 
-![](./finalReportImages/media_index.svg)
+<img src="./finalReportImages/media_index.svg" style="zoom:67%;" />
 
 平滑后图像
 
-![](./finalReportImages/media_index_aftersmooth.svg)
+<img src="./finalReportImages/media_index_aftersmooth.svg" style="zoom:67%;" />
 
 - 结果分析：
 
-  三张图只有第一张落在了卡方检验的阈值之内，事实上，我们通过观察发现，第二张图的前半段有一些非常高的点，第三张图的后半段抖动太剧烈，我猜想这应该是它们落在阈值之外的原因
+  ​		三张图只有第一张落在了卡方检验的阈值之内，事实上，我们通过观察发现，第二张图的前半段有一些非常高的点，第三张图的后半段抖动太剧烈，我猜想这应该是它们落在阈值之外的原因
 
 ### 5.3-相关系数矩阵
 
 - 原理
 
 > ​		相关系数是最早由统计学家卡尔·皮尔逊设计的统计指标，是研究变量之间**线性相关程度**的量，一般用字母 r 表示。
-> ​		由于研究对象的不同，相关系数有多种定义方式，较为常用的是**皮尔逊相关系数**
+> ​		由于研究对象的不同，相关系数有多种定义方式，较为常用的是**皮尔逊相关系数**。
 
 - 公式
 
@@ -717,7 +715,7 @@ def corrMatrix(data):
 
 ### 5.4-线性回归
 
-从上面的相关系数矩阵不难看出，我们得到的心态分布和指数分布、感染人数等等相关系数都比较小，所以并不存在很明显的线性关系，也就没有必要用线性回归来拟合了
+​		从上面的相关系数矩阵不难看出，我们得到的心态分布和指数分布、感染人数等等相关系数都比较小，所以并不存在很明显的线性关系，也就没有必要用线性回归来拟合了
 
 ## 06-数据可视化
 
