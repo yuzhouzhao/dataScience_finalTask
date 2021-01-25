@@ -1,7 +1,6 @@
 # coding:utf-8
 
-from snownlp import sentiment
-from snownlp import SnowNLP
+from mysnownlp import sentiment
 import os
 
 files = []

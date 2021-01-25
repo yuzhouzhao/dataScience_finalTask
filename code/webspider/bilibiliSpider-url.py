@@ -6,6 +6,7 @@ keywords = ["疫情", "新冠", "抗疫", "口罩", "病例", "钟南山", "防�
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.103 Safari/537.36'}
 
+
 # 用于获取与疫情有关的b站视频的链接
 def getUrls(keyword, page):
     url = "https://search.bilibili.com/all?order=click"

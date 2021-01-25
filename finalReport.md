@@ -8,11 +8,11 @@
 
 ---
 
-|  姓名  |   学号    |    电话     |                   分工                   |
-| :----: | :-------: | :---------: | :--------------------------------------: |
-| 赵宇舟 | 191250204 | 18851865055 |  数据内容爬取、机器学习与模型训练、nlp   |
-| 林正顺 | 191250088 | 15371077531 |     数据链接爬取、信息检索、概统分析     |
-| 陶泽华 | 191250133 | 19850355091 | 数据内容爬取、数据筛选与分类、数据可视化 |
+|  姓名  |   学号    |    电话     |                       分工                        |
+| :----: | :-------: | :---------: | :-----------------------------------------------: |
+| 赵宇舟 | 191250204 | 18851865055 |       新闻内容爬取、nlp、机器学习与模型训练       |
+| 林正顺 | 191250088 | 15371077531 |   新闻链接爬取、信息检索、统计分析、数据可视化    |
+| 陶泽华 | 191250133 | 19850355091 | 新闻、微博及B站数据爬取、数据筛选与分类、词频统计 |
 
 ## 02-绪论
 
@@ -20,15 +20,10 @@
 
 ### 2.1-摘要
 
+​		2020年新冠疫情疫情，除了防疫工作至关重要，对公众心态的分析也必不可少，“疫情下的计算社会学”一课题旨在通过疫情期间公众社会在各类媒体上的新闻、评论等信息，利用各种分析手段，对疫情期间公众心态变化趋势进行刻画与深描。
+​		本小组利用网络爬虫、XPath等技术，通过在各大新闻网站、微博、bilibili等平台爬取数据，使用朴素贝叶斯模型，训练得到用于疫情期间公众心态分析的机器学习模型，再利用《数据科学基础》课程知识，对数据及公众心态进行卡方拟合优度检验及相关性检验分析与数据可视化，并制作可视化面板，直观展现小组工作成果、疫情新闻热度趋势及疫情期间的公众心态变化。
 
-
-
-
-
-
-
-
-**关键字**：疫情，心态分析，python，数据爬取，机器学习，朴素贝叶斯，NLP，数据可视化
+**关键字**：疫情心态分析，数据爬取，机器学习，支持向量机，朴素贝叶斯，snownlp，卡方拟合优度检验，相关性分析，数据可视化
 
 ### 2.2-研究背景
 
@@ -66,7 +61,7 @@
   1. 新浪新闻的官网对于显示的新闻熟练做了限制，不能够获取到比较早期的新闻链接
   2. 在页面上根据时间进行筛选、获取新闻链接对应的元素都不太方便
 
-  所以我没有选择直接爬去新浪新闻主页，而是在查询了相关资料之后找到了新浪新闻的[数据接口](https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2509&etime=1576944001&stime=1577030402&ctime=1577030405&date=2019-12-22&k=&num=50&page=1)
+  所以我没有选择直接爬去新浪新闻主页，而是在查询了相关资料之后找到了新浪新闻的[数据接口](https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2509&etime=1576944001&stime=1578030402&ctime=1578030405&date=2019-12-22&k=&num=50&page=1)
 
   https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2509&etime=1575734400&stime=1575820800&ctime=1575820800&date=2019-12-22&num=50&page=1
 
@@ -84,11 +79,104 @@
 
 #### bilibili视频链接爬取+bilibili视频评论爬取：
 
-​    	根据"疫情", "新冠", "抗疫", "口罩", "病例", "钟南山", "防疫", "火神山", "雷神山“，”肺炎“等一系列关键词，同时借助requests库、BeautifulSoup库来筛选对应上述关键词的链接，并将结果存入了bilibili.txt文件中。再根据获得的链接获得视频的BV号去爬取视频的评论。
+- 设定了"疫情", "新冠", "抗疫", "口罩", "病例", "钟南山", "防疫", "火神山", "雷神山“，”肺炎“等一系列关键词。
+- 借助requests库、BeautifulSoup库来筛选对应上述关键词的视频的链接，并将结果存入bilibili-url.txt文件中。
+- 根据获得的链接截取并获得视频的BV号去爬取视频的评论。
 
 #### 微博评论爬取：
 
-​		首先用cookies模拟登陆网页版新浪微博，然后根据指定的官方微博和指定的微博时间对应的微博链接来抓取该时间段的前15条微博的评论。
+-  首先用cookies模拟登陆网页版新浪微博，然后根据指定的官方微博和指定的微博时间对应的微博链接来抓取该时间段的前15条微博的评论。
+
+- 注意到微博网页版的信息是由ajax加载出来的：简单来说，在微博评论获取新的内容不需要翻页，一直在固定的一个网页不断往下拉就行，手机端和电脑端都是如此；这样的网页用，把信息不断地数出在同一个网页上地技术就是ajax。
+
+- 在过程中使用requests库获取html文档信息，利用json库将其转为字典，根据字典的键获得对应的内容。
+
+- 在爬取微博评论的时候涉及到了XPath的使用，XPath可以在XML中查找信息、支持HTML的查找、通过元素和属性进行导航，类似于正则表达式的使用。对应进行了一系列的学习：
+  **XPath的使用方法：**
+  1) **//** 双斜杠 定位根节点，会对全文进行扫描，在文档中选取所有符合条件的内容，以列表的形式返回。 
+  2) **/** 单斜杠 寻找当前标签路径的下一层路径标签或者对当前路标签内容进行操作 
+  3) **/text()** 获取当前路径下的文本内容 
+  4) **/@xxxx** 提取当前路径下标签的属性值 
+  5) **|** 可选符 使用|可选取若干个路径 如//p | //div 即在当前路径下选取所有符合条件的p标签和div标签。 
+  6) **.** 点 用来选取当前节点 
+  7) .. 双点 选取当前节点的父节点
+  **获取XPath的方法**：使用Chrome浏览器来获取 在网页中右击->选择审查元素（或者使用F12打开） 就可以在elements中查看网页的html标签了，找到想要获取XPath的标签，右击->Copy XPath 就已经将XPath路径复制到了剪切板。
+
+  ```python
+  # XPath的简单调用方法
+  from lxml import etree
+  
+  selector=etree.HTML(源码) #将源码转化为能被XPath匹配的格式
+  selector.xpath(表达式) #返回为一列表
+  ```
+
+
+#### 词频统计
+
+除此之外，还应用了jieba库进行了新闻部分的词频统计，对数据做了初步的处理。
+
+> ​		jieba库利用一个中文词库确定汉字之间的关联概率，汉字间概率大的组成词组，形成分词结果。有三种模式：
+> 1）精确模式：把文本精确地分开，不存在冗余单词。
+> 2）全模式：把文本中所有可能的词语都扫描出来，有冗余。
+> 3）搜索引擎模式：在精确模式基础上，对长词再次切分
+
+```python
+import jieba
+import re
+import os
+from collections import Counter
+
+file_dir = '/data/news/news/'
+
+
+def merge():
+    for (root, dirs, files) in os.walk(file_dir):
+        for file_name in files:
+            with open("merge.txt", 'a') as f:
+                f.writelines(os.path.join(root, file_name) + "\n")
+
+# 利用jieba进行词频统计
+def count_word():
+    cut_words = ""
+    for line in open('/data/news/mergeContent.txt', 'r',
+                     encoding='utf-8'):
+        line.strip('\n')
+        # 去掉一些不必要的字符
+        line = re.sub("[A-Za-z0-9\：\·\—\，\。\“ \”]", "", line)
+        # 输出文本中所有的单词
+        seg_list = jieba.cut(line, cut_all=False)
+        cut_words += (" ".join(seg_list))
+    all_words = cut_words.split()
+    c = Counter()
+    # 统计出现的次数
+    for x in all_words:
+        if len(x) > 1 and x != '\r\n':
+            c[x] += 1
+
+    print('\n词频统计结果：')
+    # 选取频率最高的50个词
+    for (k, v) in c.most_common(50):
+        print("%s:%d" % (k, v))
+        # 将结果写入文件
+        with open("../../data/news/word_count.txt", "a") as f:
+            f.writelines("%s:%d" % (k, v))
+            f.writelines("\n")
+
+
+if __name__ == "__main__":
+     # 之前新闻的文本是按日期划分存在不同的文件里，将新闻的内容合并到一个文件
+     merge()
+     with open("merge.txt", 'r') as f:
+         lines = f.readlines()
+         for l in lines:
+             with open(l.strip("\n"), 'r', encoding="gbk") as f1:
+                 a = f1.readlines()
+                 for b in a:
+                     with open("mergeContent.txt", 'a') as f2:
+                         f2.writelines(b)
+    count_word()
+
+```
 
 ### 3.3-代码解释
 
@@ -120,7 +208,7 @@ def readAndWrite(url):
 
 if __name__ == '__main__':
 
-    # readAndWrite('http://news.jstv.com/a/20201206/1607262930567.shtml')
+    # readAndWrite('http://news.jstv.com/a/20201206/1607262930570.shtml')
     f = open('jstv_news.txt')
     for i in f:
         url = i.replace("\n", "")
@@ -131,10 +219,13 @@ if __name__ == '__main__':
 
 ```python
 # b站视频链接爬取代码
+
+# 设定关键词
 keywords = ["疫情", "新冠", "抗疫", "口罩", "病例", "钟南山", "防疫", "火神山", "雷神山", "肺炎"]
 
 # 根据设定的关键词来获得b站相关视频的链接
 def getUrls(keyword, page):
+    # b站搜索网页的链接
     url = "https://search.bilibili.com/all?order=click"
     # 设定关键词
     params = {'keyword': keyword, 'page': page}
@@ -143,6 +234,7 @@ def getUrls(keyword, page):
     response.raise_for_status()
     response.encoding = response.apparent_encoding
     soup = BeautifulSoup(response.text, "html.parser")
+    # 找到包含相关视频的链接的部分
     lis = soup.find_all('li', {'class': "video-item matrix"})
     
     for li in lis:
@@ -155,8 +247,39 @@ def getUrls(keyword, page):
 
 ```python
 # b站视频评论爬取代码
+def get_oid(BV_CODE: str):
+    # 截取bv号
+    if "BV" == BV_CODE[:2]:
+        bv = BV_CODE[2:]
+    else:
+        bv = BV_CODE
+    # 根据bv号获得视频的链接
+    video_url = f"https://www.bilibili.com/video/BV{bv}"
+    r = requests.get(video_url, headers=header, verify=False)
+    r.raise_for_status()
+    # 找到oid号，text是评论所在的类
+    return re.search(r'content="https://www.bilibili.com/video/av(\d+)/">', r.text).group(1)
+
+
+# 获得并返回评论数据
+def get_data(page: int, oid: str):
+    time.sleep(2)  # 减少访问频率
+    # 找到该接口的URL，利用requests获取html文档信息。利用json模块将其转化为字典
+    api_url = f"https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn={page}&type=1&oid={oid}&sort=2&_={int(time.time())}"
+    r = requests.get(api_url, headers=header, verify=False)
+    return r.json()['data']['replies']
+  
+  
+def get_comment(data):
+    if not data:
+        return
+    # 向文件写入评论数据，过滤多余字符
+    for item in data:
+        message = re.sub(r'\t|\n|回复 @.*? :', '', item['content']['message'])
+        f.write(f'|\t|->\t"{message}"\t\n')
+        
+  
 if __name__ == '__main__':
-    sleep_time = 2
     file = open('bilibili-url.txt')  # 视频链接所在文件
     for i in file:
         BV_CODE = i[31:43]  # 从链接中截取得到视频的BV号
@@ -166,16 +289,12 @@ if __name__ == '__main__':
                  encoding='utf-8')
         page = 1
         while True:
-            try:
-                data = get_data(page, oid)
-                write(data) #向文件写入数据
-                end_page = 15 # 设定连续读取15页的评论
-                if page == end_page:
-                    break
-                page += 1
-            except Exception as e:
-                print('ERROR:', e)
+            data = get_data(page, oid)
+            get_comment(data) # 遍历当前页面的评论并向文件写入数据
+            end_page = 15 # 设定连续读取15页的评论
+            if page == end_page:
                 break
+            page += 1
         f.close()
 ```
 
@@ -184,20 +303,36 @@ if __name__ == '__main__':
 ```python
 # 设置cookies 模拟登陆网页版微博，cookies由本机登录时获得
 self.headers = {
-            "cookie": "login_sid_t=95e31daa102176d1debb61e844641c26; cross_origin_proto=SSL; _s_tentry=passport.weibo.com; Apache=8896751903602.45.1611205480375; SINAGLOBAL=8896751903602.45.1611205480375; ULV=1611205480379:1:1:1:8896751903602.45.1611205480375:; wb_view_log_5688140475=1440*9002; wb_view_log=1440*9002; WBStorage=8daec78e6a891122|undefined; crossidccode=CODE-tc-1L2uul-2O9Vrn-3NXFKeQ59aniHK8bfdc35; SSOLoginState=1611214485; SUB=_2A25NDV7FDeRhGeNI41oQ9C7IzDmIHXVuDmKNrDV8PUJbkNAKLWTskW1NSDShAmgWg52xu-LVa7tA1onXiM57xVOs; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WW0TQIzrxRpmDardhs5o9p15NHD95QfSonReKB7ShMfWs4DqcjQi--ciK.RiKLsi--Ri-8si-82i--fi-isiKn0i--ciKnXi-isxsHLM5tt; wvr=6; UOR=,,graph.qq.com; webim_unReadCount=%7B%22time%22%3A1611214550618%2C%22dm_pub_total%22%3A4%2C%22chat_group_client%22%3A0%2C%22chat_group_notice%22%3A0%2C%22allcountNum%22%3A42%2C%22msgbox%22%3A0%7D",
+            "cookie": "login_sid_t=95e31daa102176d1debb61e844641c26; cross_origin_proto=SSL; _s_tentry=passport.weibo.com; Apache=8897051903602.45.1611205480375; SINAGLOBAL=8897051903602.45.1611205480375; ULV=1611205480379:1:1:1:8897051903602.45.1611205480375:; wb_view_log_5688140475=1440*9002; wb_view_log=1440*9002; WBStorage=8daec78e6a891122|undefined; crossidccode=CODE-tc-1L2uul-2O9Vrn-3NXFKeQ59aniHK8bfdc35; SSOLoginState=1611214485; SUB=_2A25NDV7FDeRhGeNI41oQ9C7IzDmIHXVuDmKNrDV8PUJbkNAKLWTskW1NSDShAmgWg52xu-LVa7tA1onXiM57xVOs; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WW0TQIzrxRpmDardhs5o9p15NHD95QfSonReKB7ShMfWs4DqcjQi--ciK.RiKLsi--Ri-8si-82i--fi-isiKn0i--ciKnXi-isxsHLM5tt; wvr=6; UOR=,,graph.qq.com; webim_unReadCount=%7B%22time%22%3A1611214550618%2C%22dm_pub_total%22%3A4%2C%22chat_group_client%22%3A0%2C%22chat_group_notice%22%3A0%2C%22allcountNum%22%3A42%2C%22msgbox%22%3A0%7D",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.96 Safari/537.36",
         }
 
-def parse_comment_info(self, url):
+
+
+def parse_home_url(self, url):  # 处理解析首页面的详细信息（不包括两个通过ajax获取到的页面）
+    res = requests.get(url, headers=self.headers)
+    response = res.content.decode().replace("\\", "")
+    every_id = re.compile('name=(\d+)', re.S).findall(response)  # 获取次级页面需要的id
+    home_url = []
+    for id in every_id:
+        url = 'https://weibo.com/aj/v6/comment/big?ajwvr=6&id
+        {}&from=singleWeiBo'.format(id)
+        home_url.append(url)
+    return home_url
+      
+      
+def parse_comment(self, url):
     # 爬取评论和评论的时间
-    res = requests.write(url, headers=self.headers)
+    # 利用requests获取html文档信息。利用json模块将其转化为字典
+    res = requests.get(url, headers=self.headers)
     response = res.json()
     count = response['data']['count']
+    # 使用XPath进行定位查找内容，XPath内容可由浏览器得到
     html = etree.HTML(response['data']['html'])
-    name = html.xpath("//div[@class='list_li S_line1 clearfix']/div[@class='WB_face W_fl']/a/img/@alt")  # 解析评论人的姓名
-    info = html.xpath("//div[@node-type='replywrap']/div[@class='WB_text']/text()")  # 解析评论信息
+    name = html.xpath("//div[@class='list_li S_line1 clearfix']/div[@class='WB_face W_fl']/a/img/@alt")  # 获取评论人的姓名
+    info = html.xpath("//div[@node-type='replywrap']/div[@class='WB_text']/text()")  # 获取评论信息
     info = "".join(info).replace(" ", "").split("\n")
-    comment_time = html.xpath("//div[@class='WB_from S_txt2']/text()")  # 解析评论时间
+    comment_time = html.xpath("//div[@class='WB_from S_txt2']/text()")  # 获取评论时间
     comment_info_list = []
     # 将评论和时间存入
     for i in range(len(name)):
@@ -209,9 +344,16 @@ def parse_comment_info(self, url):
             comment_info_list.append(item)
         else:   break
     return count, comment_info_list
+
+
 ```
 
 ### 3.4-成果展示
+
+**链接内容：**
+
+<img src="./finalReportImages/urls.png" alt="urls" style="zoom:80%;" />
+<img src="./finalReportImages/urlcontent.png" alt="urlcontent" style="zoom:60%;" />
 
 **新闻内容：**
 
@@ -333,6 +475,46 @@ def parse_comment_info(self, url):
 from sklearn import svm
 ```
 
+```python
+#使用sklearn分类器
+from sklearn.svm import LinearSVC
+from nltk.classify.scikitlearn import SklearnClassifier
+
+
+# 构建两个由元组构建的列表
+from svmTest import extract_features
+
+pos_tweets = [('I love this car', 'positive'),
+              ('This view is amazing', 'positive'),
+              ('I feel great this morning', 'positive'),
+              ('I am so excited about the concert', 'positive'),
+              ('He is my best friend', 'positive')]
+
+neg_tweets = [('I do not like this car', 'negative'),
+              ('This view is horrible', 'negative'),
+              ('I feel tired this morning', 'negative'),
+              ('I am not looking forward to the concert', 'negative'),
+              ('He is my enemy', 'negative')]
+
+# 分词：保留长度大于3的词进行切割
+
+tweets = []
+
+for (words, sentiment) in pos_tweets + neg_tweets:
+    words_filtered = [e.lower() for e in words.split() if len(e) >= 3]
+    tweets.append((words_filtered, sentiment))
+
+
+classif = SklearnClassifier(LinearSVC())
+svm_classifier = classif.train()
+#  测试
+tweet_negative2 = 'Your song is annoying'
+svm_classifier.classify(extract_features(tweet_negative2.split()))
+
+```
+
+
+
 ##### 朴素贝叶斯（Naive Bayes）
 
 > **朴素贝叶斯**（Naive Bayesian Model，NBM）是基于贝叶斯定理与特征条件独立假设的分类方法
@@ -411,11 +593,61 @@ def train(self, data):
 
 ```python
 # coding:utf-8
-from snownlp import sentiment
+from mysnownlp import sentiment
 print(sentiment.classify("xxxxxx"))
 ```
 
 ​		Snownlp的情感分析，即`sentiment.classify("”)`函数，会给我们返回一个积极情绪的概率，此概率为是一个 0~1 的浮点数。概率越接近 1，表示是**积极心态**的概率越高，越靠近 0，表示是**消极心态**的概率越高，而对于接近 0.5 的样本，我们则认为其是**中立心态**，经过简单的尝试，我们将大于 0.8 和小于 0.2 的才视为强烈的积极和消极，而对于 0.2~0.8 的样本，我们则认为其在积极和消极的置信度之外。
+
+#### 模型应用
+
+​		利用训练好的模型，识别未标签数据，为后续统计分析做准备。实现了新闻心态分析、评论心态分析，并有按天分析及按月分析两种形式，例b站评论分析代码如下：
+
+```python
+# coding:utf-8
+
+from mysnownlp import sentiment
+import os
+
+files = []
+
+def get_all(cwd):
+    get_dir = os.listdir(cwd)
+    get_dir.sort()
+    for i in get_dir:
+        sub_dir = os.path.join(cwd, i)
+        if os.path.isdir(sub_dir):
+            get_all(sub_dir)
+        else:
+            files.append(i)
+
+
+def analyze(f_path):
+    count = 0
+    score = 0
+    with open('./news/' + f_path, mode='r', encoding='GBK') as f:
+        for line in f:
+            sens = line.split('。')
+            for sen in sens:
+                score += sentiment.classify(str(sen)) - 0.5
+                count += 1
+    if count == 0:
+        return -1
+    return score / count
+
+
+if __name__ == "__main__":
+    get_all(r'news')
+    if files[0][0] != '2':
+        del files[0]
+
+    for path in files:
+        s = path[:-4] + ' ' + str(analyze(path))
+        with open('./analyzeData.txt', mode='a') as fa:
+            fa.write(s+'\n')
+        print(s)
+
+```
 
 ### 4.3-代码解释
 
@@ -501,7 +733,7 @@ def classify(sent):
 
 #### 数据预处理
 
-​		由于从NLP模型中得到的数据为“日期 数据”的txt文件，所以首先需要将所有数据合并为一整个DataFrame才能进行后续的分析和可视化
+​		由于从NLP模型中得到的数据为“日期 数据”的txt文件，所以首先需要将所有数据合并为一整个DataFrame才能进行后续的分析和可视化。
 
 #### 图像平滑处理
 
@@ -526,16 +758,15 @@ index = 0
 - 效果
 
 以新闻数据得到的心态分布为例
+用原数据画出的图像是这样：
 
-用原数据画出的图像是这样
+<img src="./finalReportImages/news.svg" alt="news" style="zoom:80%;" />
 
-<img src="./finalReportImages/news.svg" alt="news" style="zoom:67%;" />
+平滑处理之后的图像是这样的：
 
-平滑处理之后的图像是这样的
+<img src="./finalReportImages/news_aftersmooth.svg" style="zoom:80%;" />
 
-<img src="./finalReportImages/news_aftersmooth.svg" style="zoom:67%;" />
-
-很明显平滑后的曲线更容易拟合出相应的曲线方程，也更加利于后面的数据分析和图像分析
+很明显平滑后的曲线更容易拟合出相应的曲线方程，也更加利于后面的数据分析和图像分析。
 
 ### 5.2-卡方拟合优度检验
 
@@ -552,7 +783,7 @@ index = 0
 
 >   零假设：H0：Ni = Ti；备择假设： Ni ≠ Ti
 >   (Ti  = N * Pi不得小于5，若小于5，将尾区相邻的组合并，直到合并后的组的Ti ≥ 5，合并后再计算卡方值)
->   卡方统计量<img src="https://bkimg.cdn.bcebos.com/formula/e5b0fcb924fa9e9eecc4629e67ee62c5.svg" alt="img" style="zoom:90%;" />
+>   卡方统计量<img src="./finalReportImages/截屏.png" alt="截屏" style="zoom:25%;" />
 
 - 代码
 
@@ -630,11 +861,11 @@ def chisquareFitting(data):
 
 原图像
 
-<img src="./finalReportImages/search_index.svg" style="zoom:67%;" />
+<img src="./finalReportImages/search_index.svg" style="zoom:80%;" />
 
 平滑后图像
 
-<img src="./finalReportImages/search_index_aftersmooth.svg" style="zoom:67%;" />
+<img src="./finalReportImages/search_index_aftersmooth.svg" style="zoom:80%;" />
 
 2. 百度资讯指数
 
@@ -642,15 +873,15 @@ def chisquareFitting(data):
 
 计算结果
 
-<img src="./finalReportImages/info.png" style="zoom:67%;" />
+<img src="./finalReportImages/info.png" style="zoom:80%;" />
 
 原图像
 
-<img src="./finalReportImages/info_index.svg" style="zoom:67%;" />
+<img src="./finalReportImages/info_index.svg" style="zoom:80%;" />
 
 平滑后图像
 
-<img src="./finalReportImages/info_index_aftersmooth.svg" style="zoom:67%;" />
+<img src="./finalReportImages/info_index_aftersmooth.svg" style="zoom:80%;" />
 
 3. 百度媒体指数
 
@@ -658,15 +889,15 @@ def chisquareFitting(data):
 
 计算结果
 
-<img src="./finalReportImages/media.png" style="zoom:67%;" />
+<img src="./finalReportImages/media.png" style="zoom:80%;" />
 
 原图像
 
-<img src="./finalReportImages/media_index.svg" style="zoom:67%;" />
+<img src="./finalReportImages/media_index.svg" style="zoom:80%;" />
 
 平滑后图像
 
-<img src="./finalReportImages/media_index_aftersmooth.svg" style="zoom:67%;" />
+<img src="./finalReportImages/media_index_aftersmooth.svg" style="zoom:80%;" />
 
 - 结果分析：
 
@@ -697,10 +928,10 @@ def corrMatrix(data):
 - 运行结果：
 
   日数据
-  <img src="./finalReportImages/corr.svg" style="zoom: 67%;" />
+  <img src="./finalReportImages/corr.svg" style="zoom: 80%;" />
 
   月数据
-  <img src="./finalReportImages/corr_month.svg" style="zoom:67%;" />
+  <img src="./finalReportImages/corr_month.svg" style="zoom:80%;" />
 
 > search_index -- 百度搜索指数
 > info_index -- 百度资讯指数
@@ -723,7 +954,7 @@ def corrMatrix(data):
 
 [可视化大屏](https://linzs148.github.io/Visualization/)  **（建议使用Chrome浏览器查看）**
 
-[可视化项目代码](https://github.com/linzs148/Visualization)
+[可视化项目代码](https://github.com/linzs148/Visualization)（Github）
 
 ![](./finalReportImages/Visualization.png)
 
@@ -824,8 +1055,15 @@ Visualization
 
 ---
 
-### 7.1-感谢与感想
+### 不足与改进
 
-### 7.2-引用
+- 微博评论爬取程序不稳定，有待改进
+- 受限于数据形式，统计分析结果不够完美
+- 本次大作业的机器学习模型没有进行正确率测试
+- 可视化页面渲染时间过长，显示不完美
 
-### 7.3-不足与改进
+### 想对老师说的话
+
+- 建议恢复python200题
+
+**End.**
