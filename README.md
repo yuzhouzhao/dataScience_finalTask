@@ -7,4 +7,4 @@
 - 对数据及公众心态进行卡方拟合优度检验及相关性检验分析与数据可视化，并制作可视化面板
 
 详情见finalReport.
-
+可视化网址：https://linzs148.github.io/Visualization/
